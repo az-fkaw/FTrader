@@ -5,8 +5,7 @@ from sqlite3 import Connection
 ##################
 # DATABASE SETUP #
 ##################
-
-DB_PATH = "data/ftrader.db"
+DB_PATH = "data/ftraderTest.db"
 
 def create_connection() -> Connection:
     """
