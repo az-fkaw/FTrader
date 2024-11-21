@@ -1,16 +1,21 @@
-##########
-# MOCK DATA
-##########
-
 import os
-import sqlite3
+import sys
+import json
 from polygon import RESTClient
-from src.db.db_utils import create_connection, hash_password
 
+# Add 'src' to sys.path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_path = os.path.join(current_dir, '..')
+sys.path.append(src_path)
+
+from db.db_utils import create_connection, hash_password
+
+#############
+# MOCK DATA #
+#############
 # Polygon.io API key (use environment variable)
-POLYGON_API_KEY = os.getenv("POLYGON_API_KEY", "s4aBSaSsOpGIaI6ZO2GQSFo0hSJJx3NDx")
-
-DB_PATH = "data/fTraderTest.db"  # Test Database Path
+POLYGON_API_KEY = os.getenv("POLYGON_API_KEY", "s4aBSaSsOpGIaI6ZO2GQSFo0hSJJx3ND")
+DB_PATH = "data/fTraderTest.db"
 
 def fetch_asset_metadata(client, symbols):
     """
@@ -19,13 +24,19 @@ def fetch_asset_metadata(client, symbols):
     metadata = []
     for symbol in symbols:
         try:
-            # Get company information
-            asset_info = client.reference_ticker_details(symbol)
+            # Fetch ticker details
+            asset_info = client.get_ticker_details(symbol)
+            
+            # Extract relevant fields
             metadata.append({
                 "symbol": symbol,
-                "name": asset_info.get("name", "Unknown"),
+                "name": getattr(asset_info, 'name', "Unknown"),
                 "data_source": "Polygon.io",
-                "metadata": asset_info,
+                "metadata": json.dumps({  # Serialize metadata as JSON
+                    "description": getattr(asset_info, 'description', "N/A"),
+                    "market": getattr(asset_info, 'market', "N/A"),
+                    "primary_exchange": getattr(asset_info, 'primary_exchange', "N/A"),
+                })
             })
         except Exception as e:
             print(f"Error fetching metadata for {symbol}: {e}")
@@ -42,9 +53,9 @@ def insert_mock_data():
     # Polygon.io client
     client = RESTClient(POLYGON_API_KEY)
 
-    ##########
-    # USERS
-    ##########
+    #########
+    # USERS #
+    #########
     mock_users = [
         {"username": "trader_joe", "password": hash_password("password123")},
         {"username": "swing_master", "password": hash_password("securepass")},
@@ -56,7 +67,7 @@ def insert_mock_data():
     print("Mock users inserted.")
 
     ##########
-    # ASSETS
+    # ASSETS #
     ##########
     mock_symbols = ["AAPL", "TSLA", "MSFT"]
     asset_metadata = fetch_asset_metadata(client, mock_symbols)
@@ -67,7 +78,7 @@ def insert_mock_data():
     print("Mock assets inserted.")
 
     ##########
-    # TRADES
+    # TRADES #
     ##########
     mock_trades = [
         {
@@ -87,9 +98,9 @@ def insert_mock_data():
     """, mock_trades)
     print("Mock trades inserted.")
 
-    ##########
-    # OPPORTUNITIES
-    ##########
+    #################
+    # OPPORTUNITIES #
+    #################
     mock_opportunities = [
         {"asset_id": 1, "date": "2024-11-20", "setup": "Breakout", "score": "A+", "risk": 2.0},
         {"asset_id": 2, "date": "2024-11-20", "setup": "TrendFollowing", "score": "A", "risk": 1.5},
