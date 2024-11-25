@@ -56,6 +56,29 @@ def initialize_db():
     """)
     print("Table 'assets' initialized.")
 
+    ##############
+    # OHLC Table #
+    ##############
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS ohlc (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        asset_id INTEGER NOT NULL,
+        timeframe TEXT NOT NULL,  -- 'daily' or 'weekly'
+        date TEXT NOT NULL,       -- ISO-8601 format
+        open REAL NOT NULL,
+        high REAL NOT NULL,
+        low REAL NOT NULL,
+        close REAL NOT NULL,
+        volume INTEGER NOT NULL,
+        moving_average_20 REAL,
+        moving_average_50 REAL,
+        moving_average_200 REAL,
+        last_updated TEXT,        -- ISO-8601 timestamp for data freshness
+        FOREIGN KEY (asset_id) REFERENCES assets (id)
+    );
+    """)
+    print("Table 'OHLC' initialized.")
+
     ################
     # TRADES TABLE #
     ################
